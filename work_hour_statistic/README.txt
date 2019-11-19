@@ -1,6 +1,9 @@
 ###########################################
-本matlab小程序用于统计打卡时间；
+本matlab小程序用于统计打卡时间；【matlab开发版本：R2018b】
+有任何问题可直接反馈至sunhao@shanghaitech.edu.cn
 数据格式 "[student_id year-month-day h:m:s d1 d2 d3 d4]"，一行一个数据
+example:    11718032	2017-12-22 23:07:46	1	0	1	0
+
 
 输入文件名： “data.dat” ， 与小程序在同一目录下。
 输出文件：work_hour_statistic.xls
@@ -11,4 +14,13 @@
 
 备注：目前以4点为打卡起点。超过4点认为是新的一天。
 下班时间显示超过24小时表示熬夜了，表格中会显示 ‘stay_up flag’
+【不需要统计的可以直接在data.dat文件里删除，之后再运行程序】
+【代码目前还没有做错误判断处理，如果文件中有空行，或者文件中数据格式不符合要求，可能会出错。
+有问题可直接反馈至sunhao@shanghaitech.edu.cn】
 
+操作步骤：
+1：打开matlab R2018b [其他版本没测试过，不清楚会不会出问题]
+2：打开 daka.m 文件
+3: 检查data.dat 文件是否跟daka.m 在一个目录下
+4：运行daka.m文件。 
+5：运行结束，目录中会多一个 work_hour_statistic.xls 文件

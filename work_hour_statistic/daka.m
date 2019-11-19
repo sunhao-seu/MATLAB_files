@@ -95,8 +95,8 @@ for id_count = 1:(id_statistic_num) %对于每个学生
         end
         %找到早晚时间后,打卡间隔超过两个小时认为有效,存入输出
         if(day_second_store_night - day_second_store_morning > work_hour_least)
-            output_array(2+3*(date_count-1),id_count+1) =  string(floor(day_second_store_morning/3600)) + ':' + string(floor(mod(day_second_store_morning,3600)/60));
-            output_array(3+3*(date_count-1),id_count+1) =  string(floor(day_second_store_night/3600)) + ':' + string(floor(mod(day_second_store_night,3600)/60));
+            output_array(2+3*(date_count-1),id_count+1) =  string(floor(day_second_store_morning/3600)) + ':' + string(floor(mod(day_second_store_morning,3600)/60))+ ' ';
+            output_array(3+3*(date_count-1),id_count+1) =  string(floor(day_second_store_night/3600)) + ':' + string(floor(mod(day_second_store_night,3600)/60))+ ' ';
             output_array(4+3*(date_count-1),id_count+1) = string( roundn( (day_second_store_night - day_second_store_morning)/3600, -2) ) + ' hours';
         end
         
@@ -121,7 +121,7 @@ for id_count = 1:(id_statistic_num) %对于每个学生
             end
             %找到早晚时间后,打卡间隔超过两个小时认为有效,存入输出
             if(day_second_store_night - day_second_store_morning > work_hour_least)
-                output_array(2+3*(date_count_yesterday-1),id_count+1) =  string(floor(day_second_store_morning/3600)) + ':' + string(floor(mod(day_second_store_morning,3600)/60));
+                output_array(2+3*(date_count_yesterday-1),id_count+1) =  string(floor(day_second_store_morning/3600)) + ':' + string(floor(mod(day_second_store_morning,3600)/60))+ ' ';
                 output_array(3+3*(date_count_yesterday-1),id_count+1) =  string(floor(day_second_store_night/3600)) + ':' + string(floor(mod(day_second_store_night,3600)/60)) + '  stay_up flag';
                 output_array(4+3*(date_count_yesterday-1),id_count+1) = string( roundn( (day_second_store_night - day_second_store_morning)/3600, -2) ) + ' hours';
             end
@@ -130,4 +130,4 @@ for id_count = 1:(id_statistic_num) %对于每个学生
     end
 end
 
-xlswrite('signin_time_statistic.xls',output_array);
+xlswrite('work_hour_statistic.xls',output_array);
