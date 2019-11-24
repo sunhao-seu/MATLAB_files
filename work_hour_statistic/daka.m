@@ -1,7 +1,16 @@
 % 最终的输出excel 表示不同学号不同天数的打卡时间（s）,x轴为学号，y轴为日期。（日期单位为天)。然后数据的单位为秒
 %日期计算： date = year_store*days_of_year(31*12) + month_store * days_of_month(31) + day_store; [可以反推回是哪天]
 % 时间的单位是秒
-%TODO: BUG % 目前已0点为一天的开始。24点之前最晚的时间为一天的结束。如果有人熬夜打卡超过0点的话，会出现错误。
+
+% 2019/11/19： 
+%  新增功能
+% 1：只输出某年某月某日之后的打卡时间，用户可以自己修改该时间 useful_data_year/useful_data_month/useful_data_day。：%其中，月份范围 [1,12], 日范围[1,31]
+% 2: 天与天之间如果空一行
+% 3: 把总时间  hours  这个单词去掉
+
+%2019/11/24
+% 调整了一些文本输出的格式，使其更符合考勤表的要求，便于复制
+
 
 
 clc;
@@ -11,6 +20,11 @@ days_of_year = 31*12;
 days_of_month = 31;
 morning_threshold = 4*3600;
 work_hour_least = 1*60*60;
+%只输出useful_data_year/useful_data_month/useful_data_day之后的数据，包含该天。可以自己修改
+%其中，月份范围 [1,12], 日范围[1,31]
+useful_data_year = 2019;       
+useful_data_month = 11;        
+useful_data_day = 1;
 
 FileName='data.dat'; %文件名
 [id,y,m,d,hh,mm,ss,d1,d2,d3,d4]=textread(FileName,'%d %d-%d-%d %d:%d:%d %d %d %d %d');  %读取文件中的数据
@@ -36,31 +50,34 @@ for i = 1:size(id,1)
     end
     
     if(~ismember(date,date_statistic))
-        %将所有日期存入数组
-        date_statistic_num = date_statistic_num + 1;
-        date_statistic(date_statistic_num) = date;
+        %日期在有效时间之后才保存
+        %if( ( (year_store == useful_data_year) && (month_store >= useful_data_month) ) || (year_store > useful_data_year) )
+            %将所有日期存入数组
+            date_statistic_num = date_statistic_num + 1;
+            date_statistic(date_statistic_num) = date;
+        %end
     end
 end
 
 %输出矩阵，x轴为学号，y轴为日期。
 output_array = strings(date_statistic_num*3+1,id_statistic_num+1);
-for i = 2:date_statistic_num+1
-    if(mod((i-1),3)==1)
-        year = ( floor(date_statistic(i-1)/days_of_year) );
-        month = ( floor( (date_statistic(i-1) - year*days_of_year)/days_of_month ) );
-        day = ( date_statistic(i-1) - year*days_of_year - month*days_of_month );
+
+for i = 1:date_statistic_num
+        year = ( floor(date_statistic(i)/days_of_year) );
+        month = ( floor( (date_statistic(i) - year*days_of_year)/days_of_month ) );
+        day = ( date_statistic(i) - year*days_of_year - month*days_of_month );
         %ymd = [num2str(year),num2str(month),num2str(day)];
-        ymd = datetime(year,month,day,'Format','eeee, MMMM d, y');
-        output_array(i,1) = string(ymd) + '  sign in time:';
-    end
-    if(mod((i-1),3)==2)
-        output_array(i,1) = 'sign out time:';
-    end
-    if(mod((i-1),3)==0)
-        output_array(i,1) = 'work time (h):';
-    end
-   
+        % ymd = datetime(year,month,day,'Format','eeee, MMMM d, y');
+        ymd = datetime(year,month,day,'Format','eeee');
+        if(day < 10)
+            output_array(2+3*(i-1),1) = string(year) + string(month) + string(0) + string(day)+ ' (' + string(ymd) + ')';
+        else
+        output_array(2+3*(i-1),1) = string(year) + string(month) + string(day)+ ' (' + string(ymd) + ')';
+        end
+        output_array(3+3*(i-1),1) = ' ';
+        output_array(4+3*(i-1),1) = '时间 (h)';
 end
+
 for i = 2:id_statistic_num+1
     output_array(1,i) = id_statistic(i-1);
 end
@@ -95,9 +112,9 @@ for id_count = 1:(id_statistic_num) %对于每个学生
         end
         %找到早晚时间后,打卡间隔超过两个小时认为有效,存入输出
         if(day_second_store_night - day_second_store_morning > work_hour_least)
-            output_array(2+3*(date_count-1),id_count+1) =  string(floor(day_second_store_morning/3600)) + ':' + string(floor(mod(day_second_store_morning,3600)/60))+ ' ';
-            output_array(3+3*(date_count-1),id_count+1) =  string(floor(day_second_store_night/3600)) + ':' + string(floor(mod(day_second_store_night,3600)/60))+ ' ';
-            output_array(4+3*(date_count-1),id_count+1) = string( roundn( (day_second_store_night - day_second_store_morning)/3600, -2) ) + ' hours';
+            output_array(2+3*(date_count-1),id_count+1) =  string(floor(day_second_store_morning/3600)) + ':' + string(floor(mod(day_second_store_morning,3600)/60))+ ':' + string(mod(day_second_store_morning,60))+ ' ';
+            output_array(3+3*(date_count-1),id_count+1) =  string(floor(day_second_store_night/3600)) + ':' + string(floor(mod(day_second_store_night,3600)/60))+ ':' + string(mod(day_second_store_night,60))+ ' ';
+            output_array(4+3*(date_count-1),id_count+1) = string( roundn( (day_second_store_night - day_second_store_morning)/3600, -2) ) + ' ';
         end
         
         % TODO: 如果早上打卡时间小于4点，认为是昨天晚上熬夜了。这时候应该更改昨天的最晚时间和时长； 然后今天的时间也要去掉这个早晨的时间重新考量。
@@ -111,7 +128,7 @@ for id_count = 1:(id_statistic_num) %对于每个学生
                 month_store = m(data_count);
                 day_store = d(data_count);
                 date_store = year_store*days_of_year + month_store * days_of_month + day_store;
-                if((id(data_count) == id_statistic(id_count)) &&  (date_store == date_statistic(date_count_yesterday)))   %如果学号对上了，日期也对上了
+                if((id(data_count) == id_statistic(id_count)) && (date_store == date_statistic(date_count_yesterday)))   %如果学号对上了，日期也对上了
                     day_second_store = hh(data_count)*60*60 + mm(data_count)*60 + ss(data_count);   %当前打卡时间
                     %但是昨天早上的时间还是正常的
                     if(day_second_store < day_second_store_morning)
@@ -121,13 +138,36 @@ for id_count = 1:(id_statistic_num) %对于每个学生
             end
             %找到早晚时间后,打卡间隔超过两个小时认为有效,存入输出
             if(day_second_store_night - day_second_store_morning > work_hour_least)
-                output_array(2+3*(date_count_yesterday-1),id_count+1) =  string(floor(day_second_store_morning/3600)) + ':' + string(floor(mod(day_second_store_morning,3600)/60))+ ' ';
-                output_array(3+3*(date_count_yesterday-1),id_count+1) =  string(floor(day_second_store_night/3600)) + ':' + string(floor(mod(day_second_store_night,3600)/60)) + '  stay_up flag';
-                output_array(4+3*(date_count_yesterday-1),id_count+1) = string( roundn( (day_second_store_night - day_second_store_morning)/3600, -2) ) + ' hours';
+                output_array(2+3*(date_count_yesterday-1),id_count+1) =  string(floor(day_second_store_morning/3600)) + ':' + string(floor(mod(day_second_store_morning,3600)/60))+ ':' + string(mod(day_second_store_morning,60))+ ' ';
+                output_array(3+3*(date_count_yesterday-1),id_count+1) =  string(floor(day_second_store_night/3600) - 24) + ':' + string(floor(mod(day_second_store_night,3600)/60))+ ':' + string(mod(day_second_store_night,60)) + ' ';
+                output_array(4+3*(date_count_yesterday-1),id_count+1) = string( roundn( (day_second_store_night - day_second_store_morning)/3600, -2) ) + ' ';
             end
         end
         
     end
 end
 
-xlswrite('work_hour_statistic.xls',output_array);
+% 只输出某年某月某日之后的结果
+output_array_new = strings(date_statistic_num*3+1,id_statistic_num+1);
+output_array_new_count = 2;
+for i = 2:id_statistic_num+1
+    output_array_new(1,i) = id_statistic(i-1);
+end
+
+for i = 1:date_statistic_num
+    year = ( floor(date_statistic(i)/days_of_year) );
+    month = ( floor( (date_statistic(i) - year*days_of_year)/days_of_month ) );
+    day = ( date_statistic(i) - year*days_of_year - month*days_of_month );
+    %ymd = [num2str(year),num2str(month),num2str(day)];
+    if( ( (year == useful_data_year) && (month == useful_data_month) && (day >= useful_data_day) ) || ( (year == useful_data_year) && (month > useful_data_month) ) || (year > useful_data_year) )
+        output_array_new(output_array_new_count,:) = output_array(2+3*(i-1),:);
+        output_array_new(output_array_new_count+1,:) = output_array(3+3*(i-1),:);
+        output_array_new(output_array_new_count+2,:) = output_array(4+3*(i-1),:);
+        output_array_new_count = output_array_new_count + 4;
+    end
+end
+
+
+delete('work_hour_statistic.xls');
+xlswrite('work_hour_statistic.xls',output_array_new);
+disp("finished, excel file is stored as work_hour_statistic.xls")
