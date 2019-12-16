@@ -11,6 +11,9 @@
 %2019/11/24
 % 调整了一些文本输出的格式，使其更符合考勤表的要求，便于复制
 
+%2019/12/16
+% 将最少打卡时间调整为了0分钟，意味着即使打一次卡也可以显示
+% 暂时修复了一个12月会被显示为下一年0月的bug。
 
 
 clc;
@@ -19,7 +22,7 @@ clear;
 days_of_year = 31*12;
 days_of_month = 31;
 morning_threshold = 4*3600;
-work_hour_least = 1*60*60;
+work_hour_least = 0;     %打卡时间超过0分钟都认为时有效的.。就是全部保留
 %只输出useful_data_year/useful_data_month/useful_data_day之后的数据，包含该天。可以自己修改
 %其中，月份范围 [1,12], 日范围[1,31]
 useful_data_year = 2019;       
@@ -66,6 +69,10 @@ for i = 1:date_statistic_num
         year = ( floor(date_statistic(i)/days_of_year) );
         month = ( floor( (date_statistic(i) - year*days_of_year)/days_of_month ) );
         day = ( date_statistic(i) - year*days_of_year - month*days_of_month );
+        if(month == 0)
+            month = 12;
+            year = year -1;
+        end
         %ymd = [num2str(year),num2str(month),num2str(day)];
         % ymd = datetime(year,month,day,'Format','eeee, MMMM d, y');
         ymd = datetime(year,month,day,'Format','eeee');
